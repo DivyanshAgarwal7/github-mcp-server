@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "github-mcp-assistant"
+version = "1.0.0"
+description = "An MCP server that allows Claude to interact with GitHub."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp",
+    "httpx"
+]
+
+[project.scripts]
+github-assistant = "github_assistant.server:main"

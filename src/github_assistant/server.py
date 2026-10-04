@@ -118,5 +118,9 @@ def comment_on_pr(owner: str, repo: str, pr_number: int, body: str) -> dict:
 
     
 # 6. Make the server executable
-if __name__ == "__main__":
+def main():
+    """Entry point for the package CLI."""
     mcp.run()
+
+if __name__ == "__main__":
+    main()
