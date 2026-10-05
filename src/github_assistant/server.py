@@ -8,20 +8,40 @@ mcp = FastMCP(name="GitHub-Assistant")
 # 2. Add a tool using a decorator
 @mcp.tool
 def get_latest_issues(owner: str, repo: str) -> dict:
-    """Fetches the 5 most recent open issues for a GitHub repository."""
+    """Fetches the 5 most recent open issues (excluding PRs) for a GitHub repository."""
     url = f"https://api.github.com/repos/{owner}/{repo}/issues"
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "FastMCP-Python-Server"
     }
-    params = {"state": "open", "per_page": 5}
+    
+    # We fetch 20 items initially because the API includes PRs in this list.
+    # If we only fetched 5, and all 5 were PRs, the filtered list would be empty.
+    params = {"state": "open", "per_page": 20}
     
     # Execute the HTTP request
     response = httpx.get(url, headers=headers, params=params)
     
     if response.status_code == 200:
-        issues = response.json()
-        return {"issues": [{"title": i["title"], "url": i["html_url"]} for i in issues]}
+        all_items = response.json()
+        
+        # Filter out Pull Requests: actual issues do NOT have a "pull_request" key
+        actual_issues = [item for item in all_items if "pull_request" not in item]
+        
+        # Keep only the top 5 after filtering
+        top_issues = actual_issues[:5]
+        
+        # Return title, url, and the complete description (body)
+        return {
+            "issues": [
+                {
+                    "title": i["title"], 
+                    "url": i["html_url"],
+                    "description": i.get("body") or "No description provided."
+                } 
+                for i in top_issues
+            ]
+        }
     else:
         return {"error": f"Failed to fetch issues: {response.status_code}"}
 
